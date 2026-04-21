@@ -1,0 +1,31 @@
+name = "fast-float"
+language = "Rust"
+
+[workload]
+name = "fast-float"
+crate = "fast-float"
+description = "Fast floating-point number parser — ETNA workload mining fast-float-rust's git history for bug fixes."
+
+# Dropped candidates (terminal reasons):
+#   - check_len_ptr_overflow_5d086d1_1 (commit 5d086d15fce43e4ecc2b5e8f7d61147580630c25):
+#     "Fixes #28" replaces `unsafe { self.ptr.add(n) <= self.end }` with a
+#     safe usize subtraction in `AsciiStr::check_len`. The pre-fix code is UB
+#     if pointer addition overflows the allocated object, but no public API
+#     path or property test input can observably trigger this — `check_len`
+#     is only called with small constant `n` (8), and the difference is not
+#     behaviorally reachable. Skipped with reason "no observable public
+#     invariant".
+
+[[variant]]
+name = "decimal_trailing_zeros_56ac048_1"
+property = "decimal_roundtrip_f64"
+injection = "marauders"
+marker = "decimal_trailing_zeros"
+source_commit = "56ac048a96c10c014d5398bae9e548b929616228"
+files = ["src/decimal.rs"]
+frameworks = ["proptest", "quickcheck", "crabcheck", "hegel"]
+witnesses = [
+    "witness_decimal_roundtrip_f64_case_9007199254740993_dot_800_zeros",
+    "witness_decimal_roundtrip_f64_case_9007199254740993_dot_1000_zeros",
+    "witness_decimal_roundtrip_f64_case_9007199254740997_dot_1000_zeros",
+]

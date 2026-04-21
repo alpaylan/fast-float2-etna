@@ -17,6 +17,17 @@ exclude = ["benches/*", "extras/*"]
 default = ["std"]
 std = []
 
+[dependencies]
+# ETNA benchmark runner framework dependencies (used by src/bin/etna.rs
+# and the etna module). Placed in main [dependencies] so the bin target
+# links against them.
+proptest = "1.0"
+quickcheck = { path = "/Users/akeles/Programming/projects/PbtBenchmark/quickcheck", features = ["etna"] }
+quickcheck_macros = { path = "/Users/akeles/Programming/projects/PbtBenchmark/quickcheck/quickcheck_macros" }
+crabcheck = { path = "/Users/akeles/Programming/projects/PbtBenchmark/crabcheck" }
+hegeltest = "0.3.7"
+rand = "0.9"
+
 [dev-dependencies]
 lexical-core = "0.7"
 hexf-parse = "0.1"

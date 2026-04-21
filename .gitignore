@@ -5,3 +5,5 @@ scratch/
 .idea/
 .DS_Store
 corpus/
+/.hegel
+progress.jsonl

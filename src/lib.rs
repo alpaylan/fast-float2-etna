@@ -55,6 +55,8 @@ mod parse;
 mod simple;
 mod table;
 
+pub mod etna;
+
 /// Opaque error type for fast-float parsing functions.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Error;

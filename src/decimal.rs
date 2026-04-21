@@ -188,6 +188,7 @@ impl Decimal {
 
 #[inline]
 pub fn parse_decimal(mut s: &[u8]) -> Decimal {
+    /*| decimal_trailing_zeros [etna] */
     // can't fail since it follows a call to parse_number
     let mut d = Decimal::default();
     let start = s;
@@ -255,6 +256,63 @@ pub fn parse_decimal(mut s: &[u8]) -> Decimal {
         d.digits[i] = 0;
     }
     d
+    /*|| decimal_trailing_zeros_56ac048_1 */
+    /*|
+    // can't fail since it follows a call to parse_number
+    let mut d = Decimal::default();
+    let c = s.get_first();
+    d.negative = c == b'-';
+    if c == b'-' || c == b'+' {
+        s = s.advance(1);
+    }
+    s = s.skip_chars(b'0');
+    parse_digits(&mut s, |digit| d.try_add_digit(digit));
+    if s.check_first(b'.') {
+        s = s.advance(1);
+        let first = s;
+        if d.num_digits == 0 {
+            s = s.skip_chars(b'0');
+        }
+        while s.len() >= 8 && d.num_digits + 8 < Decimal::MAX_DIGITS {
+            let v = s.read_u64();
+            if !is_8digits(v) {
+                break;
+            }
+            d.digits[d.num_digits..].write_u64(v - 0x3030_3030_3030_3030);
+            d.num_digits += 8;
+            s = s.advance(8);
+        }
+        parse_digits(&mut s, |digit| d.try_add_digit(digit));
+        d.decimal_point = s.len() as i32 - first.len() as i32;
+    }
+    if s.check_first2(b'e', b'E') {
+        s = s.advance(1);
+        let mut neg_exp = false;
+        if s.check_first(b'-') {
+            neg_exp = true;
+            s = s.advance(1);
+        } else if s.check_first(b'+') {
+            s = s.advance(1);
+        }
+        let mut exp_num = 0_i32;
+        parse_digits(&mut s, |digit| {
+            if exp_num < 0x10000 {
+                exp_num = 10 * exp_num + digit as i32;
+            }
+        });
+        d.decimal_point += if neg_exp { -exp_num } else { exp_num };
+    }
+    d.decimal_point += d.num_digits as i32;
+    if d.num_digits > Decimal::MAX_DIGITS {
+        d.truncated = true;
+        d.num_digits = Decimal::MAX_DIGITS;
+    }
+    for i in d.num_digits..Decimal::MAX_DIGITS_WITHOUT_OVERFLOW {
+        d.digits[i] = 0;
+    }
+    d
+    */
+    /* |*/
 }
 
 #[inline]
