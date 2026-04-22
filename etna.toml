@@ -1,31 +1,34 @@
 name = "fast-float"
-language = "Rust"
-
-[workload]
-name = "fast-float"
-crate = "fast-float"
 description = "Fast floating-point number parser — ETNA workload mining fast-float-rust's git history for bug fixes."
+language = "rust"
+crate = "fast-float"
+base_commit = "e05032de7b57990a48547e0b7014d4733d472c30"
 
-# Dropped candidates (terminal reasons):
-#   - check_len_ptr_overflow_5d086d1_1 (commit 5d086d15fce43e4ecc2b5e8f7d61147580630c25):
-#     "Fixes #28" replaces `unsafe { self.ptr.add(n) <= self.end }` with a
-#     safe usize subtraction in `AsciiStr::check_len`. The pre-fix code is UB
-#     if pointer addition overflows the allocated object, but no public API
-#     path or property test input can observably trigger this — `check_len`
-#     is only called with small constant `n` (8), and the difference is not
-#     behaviorally reachable. Skipped with reason "no observable public
-#     invariant".
+[[tasks]]
+mutations = ["decimal_trailing_zeros_56ac048_1"]
 
-[[variant]]
-name = "decimal_trailing_zeros_56ac048_1"
-property = "decimal_roundtrip_f64"
-injection = "marauders"
-marker = "decimal_trailing_zeros"
-source_commit = "56ac048a96c10c014d5398bae9e548b929616228"
+[tasks.source]
+repo = "https://github.com/aldanor/fast-float-rust"
+commits = ["56ac048a96c10c014d5398bae9e548b929616228"]
+commit_subjects = ["Ignore trailing 0s when parsing decimals (fix #4)"]
+summary = "`parse_decimal` filled a fixed 768-byte digit buffer but never trimmed trailing `'0'` bytes before the MAX_DIGITS clamp fired. For inputs like `9007199254740993.` followed by >752 zeros, the clamp truncated genuine digits instead of zero padding, inflating `decimal_point` and rounding the result off by 1 ulp at the `2^53` boundary."
+
+[tasks.injection]
+kind = "marauders"
 files = ["src/decimal.rs"]
-frameworks = ["proptest", "quickcheck", "crabcheck", "hegel"]
+locations = [{ file = "src/decimal.rs" }]
+
+[tasks.bug]
+short_name = "decimal_trailing_zeros"
+invariant = "`fast_float::parse::<f64>(s).unwrap()` must be bit-equal to `s.parse::<f64>().unwrap()` for every ASCII decimal string both parsers accept."
+how_triggered = """
+`parse_decimal` fills `Decimal::digits` (a fixed `MAX_DIGITS = 768`-byte buffer) with the raw digit characters it scans. After the loop that reads the fractional part, the fixed version records the pre-fractional start pointer and, once `num_digits` is known to be non-zero, walks the last `num_digits` slice backwards and decrements `num_digits` for every trailing `'0'` byte. The mutation omits that trim. For inputs like `"9007199254740993." + '0' * 1000`, `num_digits` sits at exactly 1000 + 16 = 1016 when the MAX_DIGITS clamp fires; the clamp discards the *last* 248 digit slots — but since all of them are trailing zeros in the fixed version, the clamp would be a no-op, whereas in the buggy version `num_digits` is still 1016 and `d.decimal_point += d.num_digits as i32` inflates the decimal exponent by the wrong offset. The resulting `Decimal` rounds off by 1 ulp from the stdlib reference (`fast_float` yields `0x4340000000000001`, stdlib yields `0x4340000000000000`). The witnesses pick mantissas at the `2^53` boundary where a 1-ulp swing flips the LSB visibly.
+"""
+
+[[tasks.tasks]]
+property = "DecimalRoundtripF64"
 witnesses = [
-    "witness_decimal_roundtrip_f64_case_9007199254740993_dot_800_zeros",
-    "witness_decimal_roundtrip_f64_case_9007199254740993_dot_1000_zeros",
-    "witness_decimal_roundtrip_f64_case_9007199254740997_dot_1000_zeros",
+  { test_fn = "witness_decimal_roundtrip_f64_case_9007199254740993_dot_800_zeros" },
+  { test_fn = "witness_decimal_roundtrip_f64_case_9007199254740993_dot_1000_zeros" },
+  { test_fn = "witness_decimal_roundtrip_f64_case_9007199254740997_dot_1000_zeros" },
 ]
