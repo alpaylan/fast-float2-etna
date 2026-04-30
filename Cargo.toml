@@ -22,9 +22,9 @@ std = []
 # and the etna module). Placed in main [dependencies] so the bin target
 # links against them.
 proptest = "1.0"
-quickcheck = { path = "/Users/akeles/Programming/projects/PbtBenchmark/quickcheck", features = ["etna"] }
-quickcheck_macros = { path = "/Users/akeles/Programming/projects/PbtBenchmark/quickcheck/quickcheck_macros" }
-crabcheck = { path = "/Users/akeles/Programming/projects/PbtBenchmark/crabcheck" }
+quickcheck = { git = "https://github.com/alpaylan/quickcheck.git", branch = "master", features = ["etna"] }
+quickcheck_macros = { git = "https://github.com/alpaylan/quickcheck.git", branch = "master" }
+crabcheck = { git = "https://github.com/alpaylan/crabcheck.git", branch = "main" }
 hegeltest = "0.3.7"
 rand = "0.9"
 

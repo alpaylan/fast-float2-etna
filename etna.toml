@@ -1,6 +1,7 @@
 name = "fast-float"
 description = "Fast floating-point number parser — ETNA workload mining fast-float-rust's git history for bug fixes."
 language = "rust"
+strategies = ["proptest", "quickcheck", "crabcheck", "hegel"]
 crate = "fast-float"
 base_commit = "e05032de7b57990a48547e0b7014d4733d472c30"
 
