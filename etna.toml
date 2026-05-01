@@ -15,7 +15,8 @@ commit_subjects = ["Ignore trailing 0s when parsing decimals (fix #4)"]
 summary = "`parse_decimal` filled a fixed 768-byte digit buffer but never trimmed trailing `'0'` bytes before the MAX_DIGITS clamp fired. For inputs like `9007199254740993.` followed by >752 zeros, the clamp truncated genuine digits instead of zero padding, inflating `decimal_point` and rounding the result off by 1 ulp at the `2^53` boundary."
 
 [tasks.injection]
-kind = "marauders"
+kind = "patch"
+patch = "patches/decimal_trailing_zeros_56ac048_1.patch"
 files = ["src/decimal.rs"]
 locations = [{ file = "src/decimal.rs" }]
 
